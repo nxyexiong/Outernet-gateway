@@ -14,7 +14,7 @@ from tuntap_utils import init_tun, uninit_tun
 
 ################ config starts ################
 tun_name = 'tun0'
-eth_name = 'eth0'
+eth_name = 'ens33'
 lan_ips = [
     '172.16.0.201',
     '172.16.0.202',
@@ -22,9 +22,9 @@ lan_ips = [
     '172.16.0.204',
     '172.16.0.205',
 ]
-server_addr = ('193.112.110.89', 6666)
-identification = 'nxyexiong-mo0'
-secret = 'nxyexiong'
+server_addr = ('1.2.3.4', 6666)
+identification = 'username'
+secret = 'secret'
 ################# config ends #################
 
 # handle configuration
@@ -32,7 +32,6 @@ identification = identification.encode('utf-8')
 identification = hashlib.sha256(identification).digest()
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-addr = ('193.112.110.89', 6666)
 
 key = secret.encode('utf-8')
 key = hashlib.sha256(key).digest()
@@ -49,16 +48,14 @@ def decrypt(key, enc):
 
 # handshake
 data = b'\x01' + identification
-sock.sendto(encrypt(key, data), addr)
+sock.sendto(encrypt(key, data), server_addr)
 data, _ = sock.recvfrom(2048)
 data = decrypt(key, data)
 tun_ip_raw = data[1:5]
 dst_ip_raw = data[5:9]
-port = data[9] * 256 + data[10]
-addr = (addr[0], port)
 tun_ip = str(dst_ip_raw[0]) + '.' + str(dst_ip_raw[1]) + '.' + str(dst_ip_raw[2]) + '.' + str(dst_ip_raw[3])
 dst_ip = str(tun_ip_raw[0]) + '.' + str(tun_ip_raw[1]) + '.' + str(tun_ip_raw[2]) + '.' + str(tun_ip_raw[3])
-print("handshake successful, tun_ip: %s, dst_ip: %s, port: %s" % (tun_ip, dst_ip, port))
+print("handshake successful, tun_ip: %s, dst_ip: %s" % (tun_ip, dst_ip))
 
 # setup tuntap
 init_tun(eth_name, tun_name, lan_ips, tun_ip, dst_ip)
@@ -78,11 +75,13 @@ fcntl.ioctl(tun, TUNSETOWNER, 1000)
 def handle_read():
     while True:
         data = os.read(tun, 2048)
-        sock.sendto(encrypt(key, data), addr)
+        data = b'\x03' + identification + data
+        sock.sendto(encrypt(key, data), server_addr)
 
 def handle_recv():
     while True:
         data, _ = sock.recvfrom(2048)
+        data = data[1:]
         os.write(tun, decrypt(key, data))
 
 read_thread = threading.Thread(target=handle_read)
