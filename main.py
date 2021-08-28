@@ -81,8 +81,8 @@ def handle_read():
 def handle_recv():
     while True:
         data, _ = sock.recvfrom(2048)
-        data = data[1:]
-        os.write(tun, decrypt(key, data))
+        data = decrypt(key, data)[1:]
+        os.write(tun, data)
 
 read_thread = threading.Thread(target=handle_read)
 read_thread.start()
