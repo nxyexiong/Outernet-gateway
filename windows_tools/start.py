@@ -41,4 +41,4 @@ def execute(cmd):
 eth_name = get_iface_name(get_default_iface())
 execute('netsh interface ipv4 set address name="%s" source=static address=172.16.0.201 mask=255.255.255.0 gateway=172.16.0.150' % (eth_name,))
 execute('netsh interface ipv4 set dns name="%s" static 1.1.1.1' % (eth_name,))
-execute('netsh interface ipv4 set subinterface "%s" mtu=1300' % (eth_name,))
+execute('netsh interface ipv4 set subinterface "%s" mtu=1400' % (eth_name,))
