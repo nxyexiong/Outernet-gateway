@@ -1,8 +1,9 @@
 import os
 
 
-def init_tun(eth_name, tun_name, lan_ips, tun_ip, dst_ip):
+def init_tun(eth_name, tun_name, lan_ips, tun_ip, dst_ip, tun_mtu=1400):
     os.system("ip tuntap add dev %s mode tun" % (tun_name,))
+    os.system("ip link set dev %s mtu %d" % (tun_name, tun_mtu))
     os.system("ifconfig %s %s dstaddr %s up" % (tun_name, tun_ip, dst_ip))
     
     os.system("echo 100 outernet >> /etc/iproute2/rt_tables")

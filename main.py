@@ -14,6 +14,7 @@ from tuntap_utils import init_tun, uninit_tun
 
 ################ config starts ################
 tun_name = 'tun0'
+tun_mtu = 1400
 eth_name = 'ens33'
 lan_ips = [
     '172.16.0.201',
@@ -58,7 +59,7 @@ dst_ip = str(tun_ip_raw[0]) + '.' + str(tun_ip_raw[1]) + '.' + str(tun_ip_raw[2]
 print("handshake successful, tun_ip: %s, dst_ip: %s" % (tun_ip, dst_ip))
 
 # setup tuntap
-init_tun(eth_name, tun_name, lan_ips, tun_ip, dst_ip)
+init_tun(eth_name, tun_name, lan_ips, tun_ip, dst_ip, tun_mtu)
 
 TUNSETIFF = 0x400454ca
 TUNSETOWNER = TUNSETIFF + 2
